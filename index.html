@@ -684,7 +684,9 @@ function showAllForms(person){
     dateLbl.textContent = '日付';
     card.appendChild(dateLbl);
     var dateIn = document.createElement('input');
-    dateIn.type='date'; dateIn.id='r'+ri+'date'; dateIn.value=d.date||today();
+    dateIn.type='date'; dateIn.id='r'+ri+'date';
+    var _rd=String(d.date||''); var _dm=_rd.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    dateIn.value=_dm?_rd.slice(0,10):today();
     card.appendChild(dateIn);
 
     var invLbl = document.createElement('label');
