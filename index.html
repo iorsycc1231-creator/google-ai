@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>現金精算</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f8;min-height:100vh;font-size:14px}
+nav{background:#1c1917;color:#fff;padding:0 16px;display:flex;align-items:center;position:sticky;top:0;z-index:100}
+.logo{font-size:15px;font-weight:700;padding:14px 0;margin-right:16px}
+.tab{padding:14px 12px;font-size:13px;cursor:pointer;border-bottom:3px solid transparent;color:#9ca3af}
+.tab.on{color:#fff;border-bottom-color:#16a34a}
+.wrap{max-width:800px;margin:0 auto;padding:20px 16px 80px}
+.card{background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.ct{font-size:15px;font-weight:700;margin-bottom:16px}
+label{display:block;font-size:12px;font-weight:600;color:#6b7280;margin-bottom:4px;margin-top:12px}
+label:first-child{margin-top:0}
+input,select{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;font-family:inherit;outline:none}
+.btn{display:block;width:100%;padding:14px;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:12px}
+.bg{background:#16a34a;color:#fff}
+.bw{background:#f3f4f6;color:#374151}
+.bd{background:#e5e7eb;color:#9ca3af;cursor:not-allowed}
+.upload{border:2px dashed #d1d5db;border-radius:12px;padding:32px 16px;text-align:center;cursor:pointer}
+.irow{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:8px}
+.ttag{background:#dbeafe;color:#2563eb;border-radius:4px;padding:2px 8px;font-size:11px;display:inline-block;margin-bottom:6px}
+.mwrap{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mbtn{padding:14px;border:2px solid #e5e7eb;border-radius:10px;background:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;width:100%}
+.mn{border-color:#16a34a;background:#f0fdf4;color:#16a34a}
+.ml{border-color:#d97706;background:#fffbeb;color:#d97706}
+.tbox{background:#f9fafb;border-radius:8px;padding:12px;margin-top:8px}
+.tr{display:flex;justify-content:space-between;padding:5px 0;font-size:13px}
+.crow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:14px}
+.idb{background:#1c1917;color:#fff;border-radius:10px;padding:16px;text-align:center;margin-bottom:16px}
+.li{background:#fff;border-radius:10px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);cursor:pointer}
+.st-paid{background:#dcfce7;color:#16a34a;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600}
+.st-signed{background:#dbeafe;color:#2563eb;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600}
+.st-unsigned{background:#fef3c7;color:#d97706;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.sc{background:#fff;border-radius:10px;padding:16px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;overflow-y:auto;padding:20px}
+.md{background:#fff;border-radius:16px;max-width:560px;margin:0 auto;padding:24px}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{background:#f3f4f6;padding:8px;text-align:left;border:1px solid #e5e7eb;font-weight:600}
+.tbl td{padding:8px;border:1px solid #e5e7eb}
+hr{border:none;border-top:1px solid #e5e7eb;margin:12px 0}
+.spin{width:32px;height:32px;border:3px solid #e5e7eb;border-top-color:#16a34a;border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 16px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.next{background:#f0fdf4;border:2px solid #86efac;border-radius:12px;padding:24px;text-align:center}
+.sign-box{border:2px solid #e5e7eb;border-radius:8px;padding:16px;margin-top:12px;background:#f9fafb}
+.banner{background:#1c1917;color:#fff;border-radius:12px;padding:16px 20px;margin-bottom:16px}
+.rbadge{background:#2563eb;color:#fff;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;display:inline-block;margin-bottom:10px}
+
+/* パスワードモーダル */
+.pw-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;align-items:center;justify-content:center}
+.pw-ov.active{display:flex}
+.pw-box{background:#fff;border-radius:16px;padding:28px 24px;width:100%;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,.18)}
+.pw-title{font-size:16px;font-weight:700;margin-bottom:6px;text-align:center}
+.pw-sub{font-size:12px;color:#9ca3af;text-align:center;margin-bottom:20px}
+.pw-input{width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:8px;font-size:16px;font-family:inherit;text-align:center;letter-spacing:4px;outline:none}
+.pw-input:focus{border-color:#16a34a}
+.pw-err{color:#dc2626;font-size:12px;text-align:center;margin-top:8px;min-height:18px}
+.pw-btn{width:100%;padding:12px;background:#16a34a;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:12px}
+.pw-cancel{width:100%;padding:10px;background:#f3f4f6;color:#374151;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:6px}
+
+/* 管理画面フィルター */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.fbtn{padding:6px 14px;border:1px solid #e5e7eb;border-radius:20px;background:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:#6b7280}
+.fbtn.on{background:#1c1917;color:#fff;border-color:#1c1917}
+
+@media print {
+  @page { size: A4; margin: 15mm 20mm 0mm 20mm; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body, #print-sheet, #print-sheet * {
+    background: #fff !important;
+    background-color: #fff !important;
+  }
+  body > *:not(#print-sheet) { display: none !important; }
+  html { height: auto !important; margin: 0 !important; padding: 0 !important; }
+  body { height: auto !important; margin: 0 !important; padding: 0 !important; background: #fff !important; }
+  #print-sheet {
+    display: block !important;
+    font-family: 'Noto Sans JP', sans-serif;
+    padding: 0;
+    margin: 0;
+    color: #000;
+    background: #fff !important;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+    overflow: hidden;
+  }
+}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">💴 現金精算</div>
+  <div class="tab on" id="t1" onclick="showTab(1)">申請</div>
+  <div class="tab" id="t2" onclick="tryAdmin()" style="display:none">管理</div>
+  <div style="margin-left:auto">
+    <button id="admin-toggle-btn" onclick="tryAdmin()" style="background:none;border:1px solid #4b5563;border-radius:6px;color:#9ca3af;font-size:11px;padding:4px 10px;cursor:pointer;font-family:inherit">管理</button>
+  </div>
+</nav>
+
+<!-- パスワードモーダル -->
+<div class="pw-ov" id="pw-ov">
+  <div class="pw-box">
+    <div style="font-size:28px;text-align:center;margin-bottom:8px">🔐</div>
+    <div class="pw-title">管理者認証</div>
+    <div class="pw-sub">パスワードを入力してください</div>
+    <input class="pw-input" type="password" id="pw-input" placeholder="••••••" maxlength="20"/>
+    <div class="pw-err" id="pw-err"></div>
+    <button class="pw-btn" onclick="checkPw()">ログイン</button>
+    <button class="pw-cancel" onclick="closePw()">キャンセル</button>
+  </div>
+</div>
+
+<div id="pg1" class="wrap"><div id="area"></div></div>
+<div id="pg2" class="wrap" style="display:none">
+  <!-- 現金残高カード -->
+  <div class="card" style="background:linear-gradient(135deg,#1c1917 60%,#292524);color:#fff;margin-bottom:16px">
+    <div style="font-size:11px;color:#9ca3af;margin-bottom:2px">💰 現金残高</div>
+    <div id="balance-display" style="font-size:32px;font-weight:700;margin-bottom:8px">¥100,000</div>
+    <div style="display:flex;gap:12px;font-size:12px;color:#9ca3af;margin-bottom:12px">
+      <span>前月繰越 <b style="color:#86efac" id="carryover-label">¥100,000</b></span>
+      <span>入金合計 <b style="color:#60a5fa" id="deposit-total-label">¥0</b></span>
+      <span>出金合計 <b style="color:#f87171" id="expense-total-label">¥0</b></span>
+    </div>
+    <button onclick="openDepositModal()" style="background:#16a34a;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">＋ 入金処理</button>
+  </div>
+
+  <!-- 統計サマリー -->
+  <div class="sg">
+    <div class="sc"><div style="font-size:11px;color:#9ca3af;margin-bottom:4px">総支出（全期間）</div><div id="c1" style="font-size:22px;font-weight:700;color:#dc2626">¥0</div></div>
+    <div class="sc"><div style="font-size:11px;color:#9ca3af;margin-bottom:4px">未精算件数</div><div id="c2" style="font-size:22px;font-weight:700">0件</div></div>
+  </div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="ct" style="margin-bottom:0">申請一覧</div>
+      <button onclick="dlCSV()" style="background:#2563eb;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">CSV出力</button>
+      <button onclick="openReceiptTray()" style="background:#0891b2;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">🗂 台紙印刷</button>
+      <button onclick="openCloseModal()" style="background:#7c3aed;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">月次締め</button>
+    </div>
+    <!-- フィルター -->
+    <div class="filter-bar">
+      <button class="fbtn on" id="f-all" onclick="setFilter('all')">すべて</button>
+      <button class="fbtn" id="f-unsigned" onclick="setFilter('unsigned')">未精算</button>
+      <button class="fbtn" id="f-paid" onclick="setFilter('paid')">精算完了</button>
+      <button class="fbtn" id="f-ledger" onclick="setFilter('ledger')">入出金記録</button>
+    </div>
+    <div id="al"></div>
+  </div>
+</div>
+
+<!-- 入金処理モーダル -->
+<div class="ov" id="deposit-ov" onclick="if(event.target===this)closeDepositModal()" style="display:none">
+  <div class="md">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <span style="font-size:17px;font-weight:700">入金処理</span>
+      <button onclick="closeDepositModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#6b7280">✕</button>
+    </div>
+
+    <!-- STEP1: 入力 -->
+    <div id="dep-step1">
+      <label style="margin-top:0">入金日</label>
+      <input type="date" id="dep-date"/>
+      <label>摘要（任意）</label>
+      <input type="text" id="dep-memo" placeholder="例：補充、手持ち補充など"/>
+      <label>入金金額</label>
+      <input type="number" id="dep-amount" placeholder="例：50000" min="1"/>
+      <button onclick="showDepConfirm()" class="btn bg" style="margin-top:16px">確認画面へ →</button>
+      <button onclick="closeDepositModal()" class="btn bw">キャンセル</button>
+      <div id="dep-history" style="margin-top:20px"></div>
+    </div>
+
+    <!-- STEP2: 確認 -->
+    <div id="dep-step2" style="display:none">
+      <div style="background:#f0fdf4;border:2px solid #86efac;border-radius:12px;padding:20px;margin-bottom:16px;text-align:center">
+        <div style="font-size:12px;color:#6b7280;margin-bottom:4px">入金日</div>
+        <div id="dep-conf-date" style="font-size:15px;font-weight:700;margin-bottom:12px"></div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:4px">摘要</div>
+        <div id="dep-conf-memo" style="font-size:15px;font-weight:700;margin-bottom:12px"></div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:4px">入金金額</div>
+        <div id="dep-conf-amount" style="font-size:28px;font-weight:700;color:#2563eb"></div>
+      </div>
+      <button onclick="saveDeposit()" class="btn bg">✓ この内容で記録する</button>
+      <button onclick="backDepInput()" class="btn bw">← 修正する</button>
+    </div>
+  </div>
+</div>
+
+<!-- 月次締めモーダル -->
+<div class="ov" id="close-ov" onclick="if(event.target===this)closeCloseModal()" style="display:none">
+  <div class="md" style="max-width:440px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <span style="font-size:17px;font-weight:700">📅 月次締め処理</span>
+      <button onclick="closeCloseModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#6b7280">✕</button>
+    </div>
+    <div id="close-step1">
+      <div style="background:#fef3c7;border:2px solid #fcd34d;border-radius:12px;padding:16px;margin-bottom:16px;font-size:13px;color:#92400e;line-height:1.7">
+        ⚠️ 締め処理を実行すると：<br>
+        ・アプリ上の申請履歴・入金履歴がリセットされます<br>
+        ・現在の残高が次月の前月繰越に自動設定されます
+      </div>
+      <div style="background:#f9fafb;border-radius:8px;padding:14px;margin-bottom:16px;font-size:13px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:#6b7280">前月繰越</span><span style="font-weight:600" id="cm-carry">¥0</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:#6b7280">入金合計</span><span style="font-weight:600;color:#2563eb" id="cm-dep">¥0</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:#6b7280">出金合計</span><span style="font-weight:600;color:#dc2626" id="cm-exp">¥0</span></div>
+        <div style="display:flex;justify-content:space-between;border-top:1px solid #e5e7eb;padding-top:8px;margin-top:4px"><span style="font-weight:700">残高（次月繰越へ）</span><span style="font-weight:700;font-size:16px" id="cm-bal">¥0</span></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;background:#f3f4f6;border-radius:8px;padding:12px 14px;margin-bottom:12px;font-size:13px">
+        <span style="color:#6b7280;font-weight:600">対象月</span>
+        <span style="font-weight:700;font-size:15px" id="close-month-label">—</span>
+      </div>
+      <button onclick="execClose()" style="width:100%;padding:14px;background:#7c3aed;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">締め処理を実行する</button>
+      <button onclick="closeCloseModal()" style="width:100%;padding:12px;background:#f3f4f6;color:#374151;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:8px">キャンセル</button>
+    </div>
+    <div id="close-step2" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:48px;margin-bottom:12px">✅</div>
+      <div style="font-size:18px;font-weight:700;color:#7c3aed;margin-bottom:6px">締め処理完了</div>
+      <div style="font-size:13px;color:#6b7280;margin-bottom:16px" id="close-done-msg"></div>
+      <button onclick="closeCloseModal()" style="width:100%;padding:12px;background:#f3f4f6;color:#374151;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<!-- 精算書印刷モーダル -->
+<div class="ov" id="print-ov" onclick="if(event.target===this)closePrintModal()" style="display:none">
+  <div class="md" style="max-width:640px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <span style="font-size:17px;font-weight:700">精算書プレビュー</span>
+      <button onclick="closePrintModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#6b7280">✕</button>
+    </div>
+    <button onclick="doPrint()" style="width:100%;padding:12px;background:#1c1917;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:16px">🖨 印刷する</button>
+    <div id="print-body"></div>
+  </div>
+</div>
+
+<!-- 印刷用（非表示・印刷時のみ表示） -->
+<div id="print-sheet" style="display:none"></div>
+
+<div class="ov" id="ov" onclick="if(event.target===this)clsM()">
+  <div class="md">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <span style="font-size:17px;font-weight:700">申請詳細</span>
+      <button onclick="clsM()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#6b7280">✕</button>
+    </div>
+    <div id="mb"></div>
+  </div>
+</div>
+
+<script>
+var APPS = JSON.parse(localStorage.getItem('apps')||'[]');
+var DEPOSITS = JSON.parse(localStorage.getItem('deposits')||'[]');
+var CARRYOVER = localStorage.getItem('carryover') !== null ? Number(localStorage.getItem('carryover')) : 100000; // 前月繰越（初期値10万円、締め処理後は保存値を使用）
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbzODAPUfKtnqxmDbPeKRZz9eMB3vXlxIPSlj_mdIlon-ODIOq2b1Or6ThhhnXuMcZ_vyg/exec';
+
+// ---- パスワード設定（ここを変更してください） ----
+var ADMIN_PASSWORD = '1234';
+// -------------------------------------------------
+
+var ADMIN_MODE = false;
+var CURRENT_FILTER = 'all';
+
+function tryAdmin(){
+  if(ADMIN_MODE){ showTab(2); return; }
+  document.getElementById('pw-ov').classList.add('active');
+  document.getElementById('pw-input').value='';
+  document.getElementById('pw-err').textContent='';
+  setTimeout(function(){ document.getElementById('pw-input').focus(); }, 100);
+}
+
+document.getElementById('pw-input').addEventListener('keydown', function(e){
+  if(e.key==='Enter') checkPw();
+});
+
+function checkPw(){
+  var val = document.getElementById('pw-input').value;
+  if(val === ADMIN_PASSWORD){
+    closePw();
+    enterAdmin();
+  } else {
+    document.getElementById('pw-err').textContent = 'パスワードが違います';
+    document.getElementById('pw-input').value='';
+    document.getElementById('pw-input').focus();
+  }
+}
+
+function closePw(){
+  document.getElementById('pw-ov').classList.remove('active');
+}
+
+function enterAdmin(){
+  ADMIN_MODE = true;
+  var t2 = document.getElementById('t2');
+  t2.style.display = 'block';
+  var btn = document.getElementById('admin-toggle-btn');
+  btn.textContent = 'ログアウト';
+  btn.style.color = '#16a34a';
+  btn.style.borderColor = '#16a34a';
+  btn.onclick = logoutAdmin;
+  showTab(2);
+}
+
+function logoutAdmin(){
+  ADMIN_MODE = false;
+  var t2 = document.getElementById('t2');
+  t2.style.display = 'none';
+  var btn = document.getElementById('admin-toggle-btn');
+  btn.textContent = '管理';
+  btn.style.color = '#9ca3af';
+  btn.style.borderColor = '#4b5563';
+  btn.onclick = tryAdmin;
+  showTab(1);
+}
+
+// スプレッドシートに保存
+function saveToSheet(app) {
+  var data = Object.assign({action:'save'}, app);
+  delete data.img;
+  if(data.receipts) data.receipts = data.receipts.map(function(r){
+    var r2 = Object.assign({},r); delete r2.b64; return r2;
+  });
+  fetch(GAS_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify(data)
+  }).catch(function(e){console.log('Sheet save error:', e);});
+}
+
+function updateSheet(id, updates) {
+  var data = Object.assign({action:'update', id:id}, updates);
+  fetch(GAS_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify(data)
+  }).catch(function(e){console.log('Sheet update error:', e);});
+}
+
+function loadFromSheet(cb) {
+  fetch(GAS_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify({action:'load'})
+  })
+  .then(function(r){return r.json();})
+  .then(function(d){if(d.ok) cb(d); else cb(null);})
+  .catch(function(e){console.log('Sheet load error:', e); cb(null);});
+}
+
+var ACS = ['駐車代','タクシー代','飲料代','飲食代','打ち合わせ','残業食事代','草刈り食事代','消耗品','自賠責保険代','不明','雑費','会費'];
+var AM = {
+  '駐車場':'駐車代','パーキング':'駐車代',
+  '交通':'タクシー代','タクシー':'タクシー代','uber':'タクシー代','Uber':'タクシー代',
+  '飲料':'飲料代','ドリンク':'飲料代','ジュース':'飲料代','カゴメ':'飲料代',
+  'お茶':'飲料代','緑茶':'飲料代','麦茶':'飲料代','ほうじ茶':'飲料代',
+  'コーヒー':'飲料代','コーラ':'飲料代','サイダー':'飲料代',
+  'ティッシュ':'消耗品','トイレ':'消耗品','洗剤':'消耗品','作業着':'消耗品',
+  '自賠責':'自賠責保険代'
+};
+function gac(n,storeName){
+  var t = n||'';
+  var s = storeName||'';
+  // コーナンは全品目消耗品
+  if(s.indexOf('コーナン')>=0) return '消耗品';
+  for(var k in AM) if(t.indexOf(k)>=0) return AM[k];
+  return '雑費';
+}
+function gid(){
+  var d=new Date();
+  var seq = (Number(localStorage.getItem('last_seq')||0)) + 1;
+  localStorage.setItem('last_seq', String(seq));
+  return 'CS-'+d.getFullYear()+('0'+(d.getMonth()+1)).slice(-2)+'-'+('000000'+seq).slice(-6);
+}
+function sv(){localStorage.setItem('apps',JSON.stringify(APPS));}
+function $e(id){return document.getElementById(id);}
+function today(){return new Date().toISOString().slice(0,10);}
+function fmt(v){return Number(v||0).toLocaleString();}
+function fmtDateJP(s){
+  if(!s) return '';
+  // ISO形式（2026-05-23T...）を YYYY-MM-DD に正規化してから表示
+  var m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(m) return m[1]+'年'+parseInt(m[2])+'月'+parseInt(m[3])+'日';
+  return s;
+}
+
+function stLabel(s){
+  if(s==='paid'||s==='精算済') return '<span class="st-paid">精算完了</span>';
+  if(s==='signed') return '<span class="st-signed">サイン済（未精算）</span>';
+  return '<span class="st-unsigned">未精算</span>';
+}
+function isPaid(a){return a.status==='paid'||a.status==='精算済';}
+
+function showTab(n){
+  for(var i=1;i<=2;i++){
+    var pg=$e('pg'+i); if(pg) pg.style.display = i===n?'block':'none';
+    var t=$e('t'+i); if(t) t.className = i===n?'tab on':'tab';
+  }
+  if(n===2) rA();
+}
+
+function setFilter(f){
+  CURRENT_FILTER = f;
+  ['all','unsigned','paid','ledger'].forEach(function(k){
+    var el=$e('f-'+k);
+    if(el) el.className = k===f?'fbtn on':'fbtn';
+  });
+  renderAdminList();
+}
+
+var RECEIPTS = [];
+var CURRENT_PERSON = '';
+
+function showUpload(){
+  RECEIPTS = [];
+  var el = $e('area');
+  el.innerHTML = '';
+
+  var card = document.createElement('div');
+  card.className = 'card';
+
+  var title = document.createElement('div');
+  title.className = 'ct';
+  title.textContent = 'レシートをアップロード';
+  card.appendChild(title);
+
+  var lbl = document.createElement('label');
+  lbl.style.marginTop = '0';
+  lbl.textContent = '精算者を選択してください';
+  card.appendChild(lbl);
+
+  var sel = document.createElement('select');
+  sel.id = 'up-person';
+  sel.innerHTML = '<option value="">-- 選択してください --</option><option>村井数正</option><option>松村武志</option><option>寺沢守弘</option><option>山田麻里子</option><option>菅生勇理愛</option>';
+  card.appendChild(sel);
+
+  var msg = document.createElement('div');
+  msg.id = 'select-msg';
+  msg.style.cssText = 'background:#fef3c7;border-radius:8px;padding:12px;text-align:center;font-size:13px;color:#d97706;margin-top:12px';
+  msg.textContent = '👆 まず精算者を選択してください';
+  card.appendChild(msg);
+
+  var uploadArea = document.createElement('div');
+  uploadArea.id = 'upload-area';
+  uploadArea.style.display = 'none';
+
+  var uz = document.createElement('div');
+  uz.id = 'uz';
+  uz.className = 'upload';
+  uz.style.marginTop = '12px';
+  uz.innerHTML =
+    '<div style="font-size:40px;margin-bottom:10px">🧾</div>' +
+    '<div style="font-weight:700;font-size:15px;margin-bottom:4px">タップして選択（複数可）</div>' +
+    '<div style="font-size:12px;color:#9ca3af">JPG・PNG・HEIC　複数枚同時選択OK</div>';
+  uploadArea.appendChild(uz);
+
+  var thumbs = document.createElement('div');
+  thumbs.id = 'thumbs';
+  thumbs.style.cssText = 'display:none;flex-wrap:wrap;gap:8px;margin-top:12px';
+  uploadArea.appendChild(thumbs);
+
+  var addBtn = document.createElement('button');
+  addBtn.id = 'add-btn';
+  addBtn.className = 'btn bw';
+  addBtn.style.display = 'none';
+  addBtn.textContent = '＋ レシートを追加する';
+  uploadArea.appendChild(addBtn);
+
+  var analyzeBtn = document.createElement('button');
+  analyzeBtn.id = 'analyze-btn';
+  analyzeBtn.className = 'btn bg';
+  analyzeBtn.style.display = 'none';
+  analyzeBtn.textContent = 'すべて解析する →';
+  uploadArea.appendChild(analyzeBtn);
+
+  card.appendChild(uploadArea);
+  el.appendChild(card);
+  window.scrollTo(0,0);
+
+  sel.onchange = function(){
+    var val = sel.value;
+    uploadArea.style.display = val ? 'block' : 'none';
+    msg.style.display = val ? 'none' : 'block';
+    if(val && !uz._bound){
+      uz._bound = true;
+      var fi = document.createElement('input');
+      fi.type='file'; fi.accept='image/*'; fi.multiple=true; fi.style.display='none';
+      document.body.appendChild(fi);
+      uz.onclick = function(){fi.click();};
+      fi.onchange = function(){addFiles(fi.files); fi.remove();};
+      addBtn.onclick = function(){
+        var fi2=document.createElement('input');
+        fi2.type='file'; fi2.accept='image/*'; fi2.multiple=true; fi2.style.display='none';
+        document.body.appendChild(fi2);
+        fi2.onchange=function(){addFiles(fi2.files); fi2.remove();};
+        fi2.click();
+      };
+      analyzeBtn.onclick = function(){analyzeAll();};
+    }
+  };
+}
+
+function compressImage(dataUrl, mime, maxW, quality, cb){
+  var img = new Image();
+  img.onload = function(){
+    var w = img.width, h = img.height;
+    if(w > maxW){ h = Math.round(h * maxW / w); w = maxW; }
+    var cv = document.createElement('canvas');
+    cv.width = w; cv.height = h;
+    cv.getContext('2d').drawImage(img, 0, 0, w, h);
+    var out = cv.toDataURL('image/jpeg', quality);
+    cb(out, 'image/jpeg');
+  };
+  img.src = dataUrl;
+}
+
+function addFiles(files){
+  Array.prototype.forEach.call(files, function(f){
+    if(!f.type.startsWith('image/')) return;
+    var r = new FileReader();
+    r.onload = function(e){
+      var original = e.target.result;
+      // 最大幅1200px・品質0.7で圧縮（容量を約1/5〜1/10に削減）
+      compressImage(original, f.type, 1200, 0.70, function(compressed, mime){
+        RECEIPTS.push({b64:compressed.split(',')[1], mime:mime, preview:compressed, data:null});
+        renderThumbs();
+      });
+    };
+    r.readAsDataURL(f);
+  });
+}
+
+function renderThumbs(){
+  var el = $e('thumbs'); if(!el) return;
+  el.style.display = 'flex';
+  el.innerHTML = RECEIPTS.map(function(r,i){
+    return '<div style="position:relative">' +
+      '<img src="'+r.preview+'" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:2px solid '+(r.data?'#16a34a':'#d1d5db')+'"/>' +
+      (r.data ? '<div style="position:absolute;bottom:2px;left:0;right:0;text-align:center;background:#16a34a;color:#fff;font-size:9px;border-radius:0 0 6px 6px;padding:1px">解析済</div>' : '') +
+      '<button onclick="removeR('+i+')" style="position:absolute;top:-5px;right:-5px;width:18px;height:18px;border-radius:50%;background:#dc2626;color:#fff;border:none;cursor:pointer;font-size:10px;line-height:18px;padding:0">✕</button>' +
+      '</div>';
+  }).join('');
+  $e('add-btn').style.display = 'block';
+  $e('analyze-btn').style.display = RECEIPTS.length ? 'block' : 'none';
+}
+
+function removeR(i){ RECEIPTS.splice(i,1); renderThumbs(); }
+
+function removeFormR(i){
+  RECEIPTS.splice(i,1);
+  if(RECEIPTS.length===0){
+    showUpload();
+  } else {
+    showAllForms(CURRENT_PERSON);
+  }
+}
+
+function recalcTot(ri){
+  // 明細の合計を計算
+  var itemsSum=0, i=0;
+  while(true){
+    var el=document.getElementById('r'+ri+'am'+i);
+    if(!el) break;
+    var v=parseInt(el.value,10);
+    itemsSum+=isNaN(v)?0:v;
+    i++;
+  }
+  // 小計はAPIの値（data-originalに保持）、警告エリアで差分を表示
+  var warnEl=document.getElementById('r'+ri+'warn');
+  var apiTotal=parseInt(document.getElementById('r'+ri+'tot').getAttribute('data-original'),10)||0;
+  if(warnEl){
+    var diff=itemsSum-apiTotal;
+    if(diff!==0){
+      warnEl.style.display='block';
+      warnEl.textContent='⚠️ 明細合計（¥'+fmt(itemsSum)+'）と小計（¥'+fmt(apiTotal)+'）が¥'+fmt(Math.abs(diff))+(diff>0?'多い':'少ない')+'です。値引きをご確認ください。';
+    } else {
+      warnEl.style.display='none';
+    }
+  }
+}
+
+function analyzeAll(){
+  if(!RECEIPTS.length) return;
+  var person = $e('up-person') ? $e('up-person').value : '';
+  CURRENT_PERSON = person;
+  $e('area').innerHTML='<div style="text-align:center;padding:60px 20px;color:#6b7280"><div class="spin"></div><div id="prog">解析中... (0/'+RECEIPTS.length+')</div></div>';
+  function next(i){
+    if(i>=RECEIPTS.length){ showAllForms(person); return; }
+    var p=$e('prog'); if(p) p.textContent='解析中... ('+(i+1)+'/'+RECEIPTS.length+')';
+    var r=RECEIPTS[i];
+    fetch('/api/API',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:r.b64,mimeType:r.mime})})
+    .then(function(res){if(!res.ok)return res.json().then(function(e){throw new Error(e.error||res.status);});return res.json();})
+    .then(function(d){r.data=d; next(i+1);})
+    .catch(function(err){
+      r.error = err ? (err.message||String(err)) : '不明なエラー';
+      r.data = null;
+      next(i+1);
+    });
+  }
+  next(0);
+}
+
+function showAllForms(person){
+  var grandTotal = RECEIPTS.reduce(function(s,r){return s+(r.data?r.data.total||0:0);},0);
+  var el = $e('area');
+  el.innerHTML = '';
+
+  var banner = document.createElement('div');
+  banner.className = 'banner';
+  banner.innerHTML =
+    '<div style="font-size:11px;color:#9ca3af;margin-bottom:2px">全レシート合計</div>' +
+    '<div style="font-size:28px;font-weight:700">¥'+fmt(grandTotal)+'</div>' +
+    '<div style="font-size:12px;color:#9ca3af;margin-top:4px">精算日：<b style="color:#fff">署名時に自動記録されます</b></div>';
+  el.appendChild(banner);
+
+  var backToTopBtn = document.createElement('button');
+  backToTopBtn.className = 'btn bw';
+  backToTopBtn.textContent = '← 最初に戻る';
+  backToTopBtn.style.marginBottom = '8px';
+  backToTopBtn.onclick = function(){showUpload();};
+  el.appendChild(backToTopBtn);
+
+  var personCard = document.createElement('div');
+  personCard.className = 'card';
+  personCard.innerHTML =
+    '<div style="display:flex;justify-content:space-between;align-items:center">' +
+    '<span style="font-size:12px;color:#6b7280;font-weight:600">精算者</span>' +
+    '<span style="font-weight:700;font-size:15px">'+person+'</span>' +
+    '</div>';
+  el.appendChild(personCard);
+
+  var thumbCard = document.createElement('div');
+  thumbCard.className = 'card';
+  thumbCard.innerHTML = '<div style="font-size:12px;font-weight:600;color:#6b7280;margin-bottom:10px">添付レシート（'+RECEIPTS.length+'枚）</div>';
+  var thumbRow = document.createElement('div');
+  thumbRow.id = 'form-thumbs';
+  thumbRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px';
+  RECEIPTS.forEach(function(r,i){
+    var wrap = document.createElement('div');
+    wrap.style.position = 'relative';
+    wrap.innerHTML =
+      '<img src="'+r.preview+'" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:2px solid #16a34a"/>' +
+      '<button onclick="removeFormR('+i+')" style="position:absolute;top:-5px;right:-5px;width:18px;height:18px;border-radius:50%;background:#dc2626;color:#fff;border:none;cursor:pointer;font-size:10px;line-height:18px;padding:0">✕</button>';
+    thumbRow.appendChild(wrap);
+  });
+  thumbCard.appendChild(thumbRow);
+  el.appendChild(thumbCard);
+
+  RECEIPTS.forEach(function(r,ri){
+    var d = r.data || {};
+    var card = document.createElement('div');
+    card.className = 'card';
+
+    var badge = document.createElement('div');
+    badge.className = 'rbadge';
+    badge.textContent = 'レシート '+(ri+1);
+    card.appendChild(badge);
+
+    var img = document.createElement('img');
+    img.src = r.preview;
+    img.style.cssText = 'width:100%;max-height:160px;object-fit:cover;border-radius:8px;margin-bottom:12px';
+    card.appendChild(img);
+
+    // エラー時はエラー内容を表示して以降の入力欄をスキップ
+    if(r.error){
+      var errDiv = document.createElement('div');
+      errDiv.style.cssText = 'background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:12px;color:#dc2626;font-size:13px;line-height:1.6';
+      errDiv.innerHTML = '⚠️ 読み込みエラー<br><span style="font-size:12px;color:#6b7280">'+r.error+'</span><br><br>'+
+        '<button onclick="RECEIPTS.splice('+ri+',1);showAllForms(CURRENT_PERSON)" style="padding:6px 14px;background:#dc2626;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit">このレシートを削除</button>';
+      card.appendChild(errDiv);
+      el.appendChild(card);
+      return;
+    }
+
+    var storeLbl = document.createElement('label');
+    storeLbl.textContent = '支払先';
+    card.appendChild(storeLbl);
+    var storeIn = document.createElement('input');
+    storeIn.type='text'; storeIn.id='r'+ri+'store'; storeIn.value=d.store_name||'';
+    card.appendChild(storeIn);
+
+    var dateLbl = document.createElement('label');
+    dateLbl.textContent = '日付';
+    card.appendChild(dateLbl);
+    var dateIn = document.createElement('input');
+    dateIn.type='date'; dateIn.id='r'+ri+'date'; dateIn.value=d.date||today();
+    card.appendChild(dateIn);
+
+    var invLbl = document.createElement('label');
+    invLbl.textContent = 'インボイス番号';
+    card.appendChild(invLbl);
+    var invIn = document.createElement('input');
+    invIn.type='text'; invIn.id='r'+ri+'inv'; invIn.value=d.invoice_number||''; invIn.placeholder='T123456789012';
+    card.appendChild(invIn);
+
+    var itemsLbl = document.createElement('div');
+    itemsLbl.style.cssText = 'margin-top:12px;font-weight:700;font-size:13px;margin-bottom:8px';
+    itemsLbl.textContent = '明細・勘定科目';
+    card.appendChild(itemsLbl);
+
+    (d.items||[]).forEach(function(it,i){
+      var ac = gac(it.name);
+      var row = document.createElement('div');
+      row.className = 'irow';
+      var opts = ACS.map(function(a){return '<option'+(a===ac?' selected':'')+'>'+a+'</option>';}).join('');
+      row.innerHTML =
+        '<div style="display:flex;gap:6px;margin-bottom:6px;align-items:center">' +
+        '<input type="text" id="r'+ri+'nm'+i+'" value="'+(it.name||'').replace(/"/g,'&quot;')+'"' +
+        ' style="flex:1;padding:5px 8px;font-size:12px;font-weight:600;border:1px solid #e5e7eb;border-radius:6px;font-family:inherit"/>' +
+        '<input type="number" id="r'+ri+'am'+i+'" value="'+it.amount+'"' +
+        ' style="width:90px;padding:5px 8px;font-size:12px;font-weight:700;color:'+(it.amount<0?'#dc2626':'#16a34a')+';border:1px solid #e5e7eb;border-radius:6px;font-family:inherit;text-align:right"' +
+        ' oninput="recalcTot('+ri+')"/>' +
+        '</div>' +
+        '<span class="ttag">'+(it.tax_category||'不明')+'</span>' +
+        '<select id="r'+ri+'ac'+i+'" style="width:100%;padding:6px 8px;font-size:12px;border:1px solid #e5e7eb;border-radius:6px;margin-top:4px;font-family:inherit">'+opts+'</select>';
+      card.appendChild(row);
+    });
+
+    var tbox = document.createElement('div');
+    tbox.className = 'tbox';
+    tbox.innerHTML =
+      '<div class="tr"><span style="color:#6b7280">消費税(8%)</span><span>'+(d.tax_8?'¥'+fmt(d.tax_8):'—')+'</span></div>' +
+      '<div class="tr"><span style="color:#6b7280">消費税(10%)</span><span>'+(d.tax_10?'¥'+fmt(d.tax_10):'—')+'</span></div>' +
+      '<div class="tr"><span style="font-weight:700">小計</span><span id="r'+ri+'tot" data-original="'+d.total+'" style="font-weight:700;color:#dc2626">¥'+fmt(d.total)+'</span></div>';
+    card.appendChild(tbox);
+    var warnDiv=document.createElement('div');
+    warnDiv.id='r'+ri+'warn';
+    warnDiv.style.cssText='display:none;background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:10px 12px;margin-top:8px;font-size:12px;color:#92400e;line-height:1.6';
+    card.appendChild(warnDiv);
+    el.appendChild(card);
+  });
+
+  var methodCard = document.createElement('div');
+  methodCard.className = 'card';
+  methodCard.innerHTML =
+    '<div class="ct">精算方法を選択</div>' +
+    '<div class="mwrap">' +
+    '<button class="mbtn" id="bn">今すぐ精算</button>' +
+    '<button class="mbtn" id="bl">後で精算</button>' +
+    '</div>';
+  el.appendChild(methodCard);
+
+  var signCard = document.createElement('div');
+  signCard.id = 'sc';
+  signCard.className = 'card';
+  signCard.style.display = 'none';
+  signCard.innerHTML =
+    '<div class="ct">電子サイン</div>' +
+    '<p style="font-size:12px;color:#6b7280;margin-bottom:10px">指またはマウスで署名してください</p>' +
+    '<canvas id="cvs" height="160" style="border:2px solid #e5e7eb;border-radius:8px;width:100%;touch-action:none;cursor:crosshair;background:#fafafa;display:block"></canvas>' +
+    '<div style="display:flex;gap:8px;margin-top:8px;align-items:center">' +
+    '<button id="clrbtn" style="padding:6px 12px;background:#f3f4f6;border:none;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600">クリア</button>' +
+    '<span id="sl" style="display:none;font-size:12px;color:#16a34a;font-weight:600">✓ 署名済み</span>' +
+    '</div>';
+  el.appendChild(signCard);
+
+  var sbwrap = document.createElement('div');
+  sbwrap.id = 'sbwrap';
+  sbwrap.style.display = 'none';
+  var confirmbtn = document.createElement('button');
+  confirmbtn.id = 'confirmbtn';
+  confirmbtn.className = 'btn bg';
+  confirmbtn.textContent = '申請内容を確認する →';
+  sbwrap.appendChild(confirmbtn);
+  el.appendChild(sbwrap);
+
+  window.scrollTo(0,0);
+
+  var method=null, signed=false, drawing=false;
+
+  $e('bn').onclick = function(){
+    method='now';
+    $e('bn').className='mbtn mn'; $e('bl').className='mbtn';
+    $e('sc').style.display='block'; $e('sbwrap').style.display='block';
+    var cv=$e('cvs'); cv.width=cv.parentElement.offsetWidth-40;
+    signed=false; drawing=false; $e('sl').style.display='none';
+    var ctx=cv.getContext('2d');
+    ctx.clearRect(0,0,cv.width,cv.height);
+    ctx.strokeStyle='#1c1917'; ctx.lineWidth=2.5; ctx.lineCap='round';
+    function xy(e){var r=cv.getBoundingClientRect(),s=e.touches?e.touches[0]:e;return{x:s.clientX-r.left,y:s.clientY-r.top};}
+    cv.onmousedown=cv.ontouchstart=function(e){e.preventDefault();drawing=true;var p=xy(e);ctx.beginPath();ctx.moveTo(p.x,p.y);};
+    cv.onmousemove=cv.ontouchmove=function(e){e.preventDefault();if(!drawing)return;var p=xy(e);ctx.lineTo(p.x,p.y);ctx.stroke();signed=true;$e('sl').style.display='inline';};
+    cv.onmouseup=cv.ontouchend=function(){drawing=false;};
+  };
+
+  $e('bl').onclick = function(){
+    method='later';
+    $e('bn').className='mbtn'; $e('bl').className='mbtn ml';
+    $e('sc').style.display='none'; $e('sbwrap').style.display='block';
+  };
+
+  $e('clrbtn').onclick = function(){
+    var cv=$e('cvs'); cv.getContext('2d').clearRect(0,0,cv.width,cv.height);
+    signed=false; $e('sl').style.display='none';
+  };
+
+  confirmbtn.onclick = function(){
+    if(!method){alert('精算方法を選択してください');return;}
+    if(method==='now'&&!signed){alert('電子サインを記入してください');return;}
+
+    // 精算日ベースで月またぎチェック（精算日が今月以外なら警告）
+    var now = new Date();
+    var currentMonth = now.getFullYear()+'-'+('0'+(now.getMonth()+1)).slice(-2);
+    // 既存APPSの精算日の最多月を取得
+    var existingMonths = {};
+    APPS.forEach(function(a){
+      var m = (a.settlement_date||'').slice(0,7);
+      if(m) existingMonths[m] = (existingMonths[m]||0)+1;
+    });
+    var dominantMonth = currentMonth;
+    var maxC = 0;
+    Object.keys(existingMonths).forEach(function(m){
+      if(existingMonths[m]>maxC){maxC=existingMonths[m];dominantMonth=m;}
+    });
+    // 今回の申請の精算日（今すぐ精算=今日、後で精算=後で確定）が既存の月と違う月になる可能性
+    if(method==='now' && dominantMonth && dominantMonth !== currentMonth){
+      var dp = dominantMonth.split('-');
+      var cp = currentMonth.split('-');
+      if(!confirm(dp[0]+'年'+parseInt(dp[1],10)+'月の申請が既にあります。\n今日（'+cp[0]+'年'+parseInt(cp[1],10)+'月）に精算すると月をまたぎます。\n先に締め処理を行ってください。\n\nこのまま申請しますか？')){return;}
+    }
+
+    var signData=null;
+    if(method==='now'){try{signData=$e('cvs').toDataURL();}catch(e){}}
+    var receiptsSnap = RECEIPTS.map(function(r,ri){
+      var d=r.data||{};
+      return {
+        store:$e('r'+ri+'store').value,
+        date:$e('r'+ri+'date').value,
+        invoice:$e('r'+ri+'inv').value,
+        items:(d.items||[]).map(function(it,i){
+          var acEl=$e('r'+ri+'ac'+i);
+          var nmEl=$e('r'+ri+'nm'+i);
+          var amEl=$e('r'+ri+'am'+i);
+          var amt=amEl?(isNaN(parseInt(amEl.value,10))?0:parseInt(amEl.value,10)):it.amount;
+          return {name:nmEl?nmEl.value:it.name, amount:amt, tax_category:it.tax_category, account:acEl?acEl.value:'雑費'};
+        }),
+        tax_8:d.tax_8,tax_10:d.tax_10,
+        total:d.total,
+        b64:r.b64,mime:r.mime
+      };
+    });
+    var fixedGrandTotal = RECEIPTS.reduce(function(r,rc){return r+(rc.data?rc.data.total||0:0);},0);
+    showConfirm({
+      person:person,
+      receipts:receiptsSnap,
+      grandTotal:fixedGrandTotal,
+      method:method,
+      status:method==='now'?'paid':'unsigned',
+      sign:signData,
+      settlement_date:method==='now'?today():null
+    });
+  };
+}
+
+function showConfirm(snap){
+  var el=$e('area');
+  el.innerHTML='';
+
+  var banner=document.createElement('div');
+  banner.className='banner';
+  banner.innerHTML=
+    '<div style="font-size:11px;color:#9ca3af;margin-bottom:2px">全レシート合計</div>'+
+    '<div style="font-size:28px;font-weight:700">¥'+fmt(snap.grandTotal)+'</div>'+
+    '<div style="font-size:12px;color:#9ca3af;margin-top:4px">精算日：<b style="color:#fff">'+(snap.settlement_date||'署名時に自動記録されます')+'</b></div>';
+  el.appendChild(banner);
+
+  var confCard=document.createElement('div');
+  confCard.className='card';
+  var rows='';
+  snap.receipts.forEach(function(r,ri){
+    var itemRows=r.items.map(function(it){
+      return '<div class="crow"><span style="color:#6b7280">'+it.name+'</span><span style="font-weight:600">'+it.account+'　¥'+fmt(it.amount)+'</span></div>';
+    }).join('');
+    // 税額が取れていない場合、total - items合計で推定
+    var itemsSum = r.items.reduce(function(s,it){return s+it.amount;},0);
+    var tax8  = r.tax_8  || 0;
+    var tax10 = r.tax_10 || 0;
+    var taxTotal = tax8 + tax10;
+    // APIが税額nullでtotalに税込が入っている場合のフォールバック
+    if(!tax8 && !tax10 && r.total && r.total > itemsSum){
+      taxTotal = r.total - itemsSum;
+    }
+    rows+=
+      '<div style="background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:10px">'+
+      '<div class="rbadge">レシート '+(ri+1)+'</div>'+
+      '<div class="crow"><span style="color:#6b7280">支払先</span><span style="font-weight:600">'+(r.store||'—')+'</span></div>'+
+      '<div class="crow"><span style="color:#6b7280">日付</span><span style="font-weight:600">'+(r.date||'—')+'</span></div>'+
+      itemRows+
+      '<div style="border-top:1px solid #e5e7eb;margin-top:6px;padding-top:6px">'+
+      (tax8?'<div class="tr"><span style="color:#6b7280">消費税(8%)</span><span>¥'+fmt(tax8)+'</span></div>':'')+
+      (tax10?'<div class="tr"><span style="color:#6b7280">消費税(10%)</span><span>¥'+fmt(tax10)+'</span></div>':'')+
+      (!tax8&&!tax10&&taxTotal?'<div class="tr"><span style="color:#6b7280">消費税（推定）</span><span>¥'+fmt(taxTotal)+'</span></div>':'')+
+      '<div class="tr" style="margin-top:2px"><span style="font-weight:700">合計（税込）</span><span style="font-weight:700;color:#dc2626;font-size:15px">¥'+fmt(r.total)+'</span></div>'+
+      '</div>'+
+      '</div>';
+  });
+  confCard.innerHTML=
+    '<div class="ct">申請内容の確認</div>'+
+    '<div class="crow"><span style="color:#6b7280">申請者</span><span style="font-weight:600">'+snap.person+'</span></div>'+
+    '<div class="crow"><span style="color:#6b7280">精算方法</span><span style="font-weight:600">'+(snap.method==='now'?'今すぐ精算':'後で精算')+'</span></div>'+
+    '<div class="crow"><span style="color:#6b7280">レシート枚数</span><span style="font-weight:600">'+snap.receipts.length+'枚</span></div>'+
+    '<hr/>'+rows+
+    (snap.receipts.length>1?
+      '<div style="background:#1c1917;color:#fff;border-radius:8px;padding:12px 16px;margin-top:4px;display:flex;justify-content:space-between;align-items:center">'+
+      '<span style="font-weight:700;font-size:14px">合計</span>'+
+      '<span style="font-weight:700;font-size:20px;color:#86efac">¥'+fmt(snap.grandTotal)+'</span>'+
+      '</div>':
+    '');
+  el.appendChild(confCard);
+
+  var sndbtn=document.createElement('button');
+  sndbtn.className='btn bg'; sndbtn.textContent='送信する'; sndbtn.style.marginTop='0';
+  el.appendChild(sndbtn);
+
+  var bkbtn=document.createElement('button');
+  bkbtn.className='btn bw'; bkbtn.textContent='← 戻って修正する';
+  el.appendChild(bkbtn);
+
+  window.scrollTo(0,0);
+
+  sndbtn.onclick=function(){
+    var allItems=[];
+    snap.receipts.forEach(function(r){
+      r.items.forEach(function(it){allItems.push(Object.assign({},it,{_store:r.store,_date:r.date}));});
+    });
+    var app={
+      id:gid(),
+      date:snap.receipts[0]?snap.receipts[0].date:today(),
+      person:snap.person,
+      store:snap.receipts.length===1?snap.receipts[0].store:'複数（'+snap.receipts.length+'件）',
+      invoice:snap.receipts[0]?snap.receipts[0].invoice:'',
+      items:allItems,
+      tax_8:snap.receipts.reduce(function(s,r){return s+(r.tax_8||0);},0),
+      tax_10:snap.receipts.reduce(function(s,r){return s+(r.tax_10||0);},0),
+      total:snap.grandTotal,
+      method:snap.method,status:snap.status,
+      sign:snap.sign,settlement_date:snap.settlement_date,
+      client_sign:null,client_signed_at:null,paid_at:null,
+      receipts:snap.receipts.map(function(r){return{store:r.store,date:r.date,invoice:r.invoice,items:r.items,tax_8:r.tax_8,tax_10:r.tax_10,total:r.total};}),
+      created:new Date().toISOString()
+    };
+    APPS.push(app); sv();
+    saveToSheet(app);
+    showDone(app);
+  };
+
+  bkbtn.onclick=function(){CURRENT_PERSON=snap.person;showAllForms(snap.person);};
+}
+
+function showDone(app){
+  var el=$e('area');
+  el.innerHTML=
+    '<div style="text-align:center;padding:40px 0 24px">'+
+    '<div style="font-size:64px;margin-bottom:16px">✅</div>'+
+    '<div style="font-size:22px;font-weight:700;color:#16a34a;margin-bottom:6px">申請ありがとうございました</div>'+
+    '<div style="font-size:14px;color:#6b7280">内容を確認の上、処理いたします</div></div>'+
+    '<div style="margin-bottom:12px;text-align:center">'+stLabel(app.status)+'</div>'+
+    '<div class="banner">'+
+    '<div style="font-size:11px;color:#9ca3af;margin-bottom:2px">合計金額</div>'+
+    '<div style="font-size:26px;font-weight:700">¥'+fmt(app.total)+'</div>'+
+    '<div style="font-size:12px;color:#9ca3af;margin-top:4px">精算日：<b style="color:#fff">'+(app.settlement_date||'署名時に自動記録されます')+'</b></div>'+
+    '</div>'+
+    '<div class="idb"><div style="font-size:11px;color:#9ca3af;margin-bottom:6px">申請ID</div><div style="font-size:22px;font-weight:700;letter-spacing:2px">'+app.id+'</div></div>'+
+    '<div class="card">'+
+    '<div style="font-size:12px;font-weight:700;color:#6b7280;margin-bottom:10px">申請内容</div>'+
+    '<div class="tr"><span style="color:#6b7280">申請者</span><b>'+app.person+'</b></div>'+
+    '<div class="tr"><span style="color:#6b7280">レシート枚数</span><b>'+(app.receipts?app.receipts.length:1)+'枚</b></div>'+
+    '<div class="tr"><span style="color:#6b7280">合計</span><b style="color:#dc2626;font-size:17px">¥'+fmt(app.total)+'</b></div>'+
+    '</div>'+
+    '<p style="font-size:12px;color:#9ca3af;text-align:center;margin:16px 0">レシート束の先頭に申請IDを手書きで記載してください</p>'+
+    '<div class="next">'+
+    '<div style="font-size:15px;font-weight:700;color:#16a34a;margin-bottom:6px">続けて申請できます</div>'+
+    '<div style="font-size:13px;color:#6b7280;margin-bottom:16px">新しいレシートがあればこちらから</div>'+
+    '<button class="btn bg" id="newbtn">＋ 新しい申請はこちらから</button>'+
+    '</div>';
+  window.scrollTo(0,0);
+  $e('newbtn').onclick=function(){showUpload();};
+}
+
+function rA(){
+  // 読み込み中スピナー表示
+  var al = $e('al');
+  if(al) al.innerHTML = '<div style="text-align:center;padding:40px 0"><div class="spin"></div><div style="color:#9ca3af;font-size:13px;margin-top:8px">データ取得中...</div></div>';
+
+  // GASから申請データ・繰越額を取得（最も信頼できるソース）
+  loadFromSheet(function(res){
+    if(res){
+      // 締め日以降のデータのみGASが返す
+      APPS = res.data || [];
+      // GASの設定シートから繰越額を反映
+      if(res.carryover !== undefined){
+        CARRYOVER = Number(res.carryover);
+        localStorage.setItem('carryover', String(CARRYOVER));
+      }
+      // 申請IDの連番をGASと同期（大きい方を採用）
+      if(res.last_seq !== undefined){
+        var localSeq = Number(localStorage.getItem('last_seq')||0);
+        var gasSeq = Number(res.last_seq);
+        var maxSeq = Math.max(localSeq, gasSeq);
+        localStorage.setItem('last_seq', String(maxSeq));
+      }
+    } else {
+      // GAS通信失敗時はlocalStorageにフォールバック
+      var savedCarryover = localStorage.getItem('carryover');
+      if(savedCarryover !== null) CARRYOVER = Number(savedCarryover);
+    }
+    sv();
+
+    fetch(GAS_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({action:'loadDeposits'})
+    })
+    .then(function(r){return r.json();})
+    .then(function(d){
+      // 入金も完全上書き
+      DEPOSITS = (d.ok && d.data) ? d.data : [];
+      localStorage.setItem('deposits', JSON.stringify(DEPOSITS));
+      renderAdminList();
+    })
+    .catch(function(e){
+      console.log('Deposit load error:', e);
+      renderAdminList();
+    });
+  });
+}
+
+function calcBalance(){
+  var depositSum = DEPOSITS.reduce(function(s,d){return s+(d.amount||0);},0);
+  var expenseSum = APPS.filter(isPaid).reduce(function(s,a){return s+(a.total||0);},0);
+  return {
+    balance: CARRYOVER + depositSum - expenseSum,
+    depositSum: depositSum,
+    expenseSum: expenseSum
+  };
+}
+
+function updateBalanceUI(){
+  var b = calcBalance();
+  var el = document.getElementById('balance-display');
+  if(el){
+    el.textContent = '¥'+fmt(b.balance);
+    el.style.color = b.balance < 0 ? '#f87171' : '#fff';
+  }
+  var dl = document.getElementById('deposit-total-label');
+  if(dl) dl.textContent = '¥'+fmt(b.depositSum);
+  var el2 = document.getElementById('expense-total-label');
+  if(el2) el2.textContent = '¥'+fmt(b.expenseSum);
+  var cl = document.getElementById('carryover-label');
+  if(cl) cl.textContent = '¥'+fmt(CARRYOVER);
+}
+
+function openDepositModal(){
+  var el = document.getElementById('dep-date');
+  if(el) el.value = today();
+  document.getElementById('dep-amount').value='';
+  document.getElementById('dep-memo').value='';
+  document.getElementById('dep-step1').style.display='block';
+  document.getElementById('dep-step2').style.display='none';
+  renderDepHistory();
+  document.getElementById('deposit-ov').style.display = 'block';
+}
+
+function showDepConfirm(){
+  var dt = document.getElementById('dep-date').value;
+  var memo = document.getElementById('dep-memo').value || '入金';
+  var amt = parseInt(document.getElementById('dep-amount').value, 10);
+  if(!dt){alert('入金日を入力してください');return;}
+  if(!amt || amt <= 0){alert('正しい金額を入力してください');return;}
+  document.getElementById('dep-conf-date').textContent = dt;
+  document.getElementById('dep-conf-memo').textContent = memo;
+  document.getElementById('dep-conf-amount').textContent = '¥'+fmt(amt);
+  document.getElementById('dep-step1').style.display='none';
+  document.getElementById('dep-step2').style.display='block';
+}
+
+function backDepInput(){
+  document.getElementById('dep-step1').style.display='block';
+  document.getElementById('dep-step2').style.display='none';
+}
+
+function saveDeposit(){
+  var dt = document.getElementById('dep-date').value;
+  var memo = document.getElementById('dep-memo').value || '入金';
+  var amt = parseInt(document.getElementById('dep-amount').value, 10);
+  if(!dt||!amt||amt<=0) return;
+  var dep = {id:'DEP-'+Date.now(), date:dt, memo:memo, amount:amt};
+  DEPOSITS.push(dep);
+  localStorage.setItem('deposits', JSON.stringify(DEPOSITS));
+  fetch(GAS_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify(Object.assign({action:'saveDeposit'}, dep))
+  }).catch(function(e){console.log('Deposit save error:', e);});
+  closeDepositModal();
+  updateBalanceUI();
+  renderAdminList();
+}
+
+function closeDepositModal(){
+  document.getElementById('deposit-ov').style.display = 'none';
+}
+
+// ---- 精算書印刷 ----
+function buildSeisanshoHTML(a){
+  function toReiwa(dateStr){
+    if(!dateStr) return '';
+    var d = new Date(dateStr);
+    var reiwa = d.getFullYear() - 2018;
+    return '令和'+reiwa+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日';
+  }
+  function mdLabel(dateStr){
+    if(!dateStr) return '';
+    try{var d=new Date(dateStr);return (d.getMonth()+1)+'月'+d.getDate()+'日';}catch(e){return dateStr;}
+  }
+
+  var dateStr = a.settlement_date || a.date || today();
+  var receipts = (a.receipts && a.receipts.length > 0) ? a.receipts : [{
+    store: a.store, date: dateStr, items: a.items||[], total: a.total
+  }];
+
+  // レシートごとに1行：取引日・勘定科目（店名）・金額
+  var itemRows = '';
+  receipts.forEach(function(r){
+    var txDate = mdLabel(r.date || dateStr);
+    // 勘定科目を集約（複数あれば最初のものを代表に）
+    var accounts = [];
+    if(r.items && r.items.length > 0){
+      r.items.forEach(function(it){
+        var ac = it.account||'雑費';
+        if(accounts.indexOf(ac) < 0) accounts.push(ac);
+      });
+    }
+    var accountLabel = accounts.length > 0 ? accounts.join('・') : '雑費';
+    var content = accountLabel + (r.store ? '（'+r.store+'）' : '');
+    itemRows +=
+      '<tr>'+
+      '<td style="border:1px solid #555;padding:3px 6px;text-align:center;white-space:nowrap">'+txDate+'</td>'+
+      '<td style="border:1px solid #555;padding:3px 6px">'+content+'</td>'+
+      '<td style="border:1px solid #555;padding:3px 6px;text-align:right;white-space:nowrap">¥'+fmt(r.total||0)+'</td>'+
+      '</tr>';
+  });
+
+  var signData = (a.sign && a.sign.startsWith('data:')) ? a.sign
+               : (a.client_sign && a.client_sign.startsWith('data:')) ? a.client_sign
+               : null;
+  var signEl = signData
+    ? '<img src="'+signData+'" style="height:42px;max-width:200px;object-fit:contain;display:inline-block;vertical-align:middle"/>'
+    : '';
+
+  return (
+    '<div style="position:relative;padding:0;font-size:11px;line-height:1.4;color:#000;font-family:\'Noto Sans JP\',sans-serif">'+
+    '<div style="text-align:center;font-size:16px;font-weight:700;letter-spacing:6px;margin-bottom:5px">《 精　算　書 》</div>'+
+    '<div style="font-size:11px;margin-bottom:2px">イソベ石油株式会社　御中</div>'+
+    '<div style="font-size:11px;margin-bottom:5px;border-bottom:1px solid #000;padding-bottom:2px">'+
+      '<span style="font-size:13px;font-weight:700">'+
+      (function(){var d=new Date(dateStr);return d.getMonth()+1;})()+
+      '月'+(function(){var d=new Date(dateStr);return d.getDate();})()+
+      '日</span>　〜　　　月　　　日'+
+    '</div>'+
+    '<table style="width:100%;border-collapse:collapse;font-size:10.5px;margin-bottom:6px;table-layout:fixed">'+
+      '<colgroup><col style="width:54px"/><col/><col style="width:72px"/></colgroup>'+
+      '<thead><tr style="background:#fff">'+
+        '<th style="border:1px solid #555;padding:3px 4px;text-align:center">取引日</th>'+
+        '<th style="border:1px solid #555;padding:3px 4px;text-align:center">内　訳</th>'+
+        '<th style="border:1px solid #555;padding:3px 4px;text-align:center">金　額</th>'+
+      '</tr></thead>'+
+      '<tbody>'+itemRows+'</tbody>'+
+      '<tfoot><tr>'+
+        '<td colspan="2" style="border:1px solid #555;padding:4px 8px;font-weight:700;text-align:right;font-size:12px">合計金額</td>'+
+        '<td style="border:1px solid #555;padding:4px 8px;text-align:right;font-weight:700;font-size:12px">¥'+fmt(a.total)+'</td>'+
+      '</tr></tfoot>'+
+    '</table>'+
+    '<div style="text-align:center;font-size:11px;margin-bottom:2px">'+toReiwa(dateStr)+'</div>'+
+    '<div style="font-size:11px;margin-bottom:5px">上記合計金額正に受領いたしました。</div>'+
+    '<div style="display:flex;align-items:flex-end;gap:8px">'+
+      '<div style="font-size:11px;white-space:nowrap">精算者氏名</div>'+
+      '<div style="border-bottom:1.5px solid #000;min-width:160px;padding-bottom:2px;display:flex;align-items:flex-end">'+
+        (signEl ? signEl : '<span style="font-size:13px;font-weight:700">'+a.person+'</span>')+
+      '</div>'+
+    '</div>'+
+    '<div style="position:absolute;bottom:2px;right:8px;font-size:9px;color:#aaa">'+a.id+'</div>'+
+    '</div>'
+  );
+}
+function openPrintModal(id){
+  // 未精算の申請がある場合に警告
+  var unpaid = APPS.filter(function(x){return x.id!==id && (x.status==='unsigned'||x.status==='');});
+  if(unpaid.length > 0){
+    var names = unpaid.map(function(x){return x.person+'（'+x.date+'）';}).join('、');
+    if(!confirm('⚠️ 未精算の申請が'+unpaid.length+'件あります。\n'+names+'\n\nこのまま印刷しますか？')){return;}
+  }
+  var a = APPS.find(function(x){return x.id===id;});
+  if(!a) return;
+  var html = buildSeisanshoHTML(a);
+  document.getElementById('print-body').innerHTML = html;
+  document.getElementById('print-sheet').innerHTML = html;
+  document.getElementById('print-ov').style.display = 'block';
+}
+
+function closePrintModal(){
+  document.getElementById('print-ov').style.display = 'none';
+}
+
+function doPrint(){
+  window.print();
+}
+
+function renderDepHistory(){
+  var el = document.getElementById('dep-history');
+  if(!el) return;
+  if(!DEPOSITS.length){ el.innerHTML=''; return; }
+  el.innerHTML = '<div style="font-size:13px;font-weight:700;margin-bottom:8px;color:#374151">入金履歴</div>'+
+    DEPOSITS.slice().reverse().map(function(d){
+      return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:13px">'+
+        '<div><span style="color:#9ca3af">'+d.date+'</span>　'+d.memo+'</div>'+
+        '<div style="font-weight:700;color:#2563eb">+¥'+fmt(d.amount)+'</div></div>';
+    }).join('');
+}
+
+function renderAdminList(){
+  updateBalanceUI();
+  var t=APPS.reduce(function(s,a){return s+(a.total||0);},0);
+  var p=APPS.filter(function(a){return !isPaid(a);}).length;
+  $e('c1').textContent='¥'+fmt(t);
+  $e('c2').textContent=p+'件';
+
+  var el=$e('al');
+
+  // 入出金記録タブ
+  if(CURRENT_FILTER==='ledger'){
+    // 入金データ行
+    var depRows = DEPOSITS.map(function(d){
+      return {_type:'deposit', date:d.date, label:'入金', desc:d.memo, amount:d.amount, id:d.id};
+    });
+    // 精算完了の申請行
+    var appRows = APPS.filter(isPaid).map(function(a){
+      var rcptCount = a.receipts ? a.receipts.length : 1;
+      return {_type:'app', date:a.settlement_date||a.date, label:'出金', desc:a.person+'　'+rcptCount+'件レシート清算', amount:a.total, id:a.id, app:a};
+    });
+    var ledger = depRows.concat(appRows).sort(function(a,b){return a.date>b.date?-1:a.date<b.date?1:0;});
+    if(!ledger.length){
+      el.innerHTML='<p style="color:#9ca3af;text-align:center;padding:24px">入出金記録はありません</p>';
+      return;
+    }
+    el.innerHTML = ledger.map(function(row){
+      var isIn = row._type==='deposit';
+      var amtColor = isIn ? '#2563eb' : '#dc2626';
+      var amtPrefix = isIn ? '+' : '-';
+      var badge = isIn
+        ? '<span style="background:#dbeafe;color:#2563eb;border-radius:4px;padding:1px 7px;font-size:11px;font-weight:700">入金</span>'
+        : '<span style="background:#fee2e2;color:#dc2626;border-radius:4px;padding:1px 7px;font-size:11px;font-weight:700">出金</span>';
+      var onclick = isIn ? '' : ' onclick="shD(\''+row.id+'\')"';
+      return '<div class="li"'+onclick+' style="'+(isIn?'':'cursor:pointer')+'">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center">' +
+        '<div><div style="font-size:12px;color:#9ca3af">'+row.date+'　'+badge+'</div>' +
+        '<div style="font-weight:600;margin-top:4px">'+row.desc+'</div></div>' +
+        '<div style="text-align:right;font-weight:700;font-size:16px;color:'+amtColor+'">'+amtPrefix+'¥'+fmt(row.amount)+'</div>' +
+        '</div></div>';
+    }).join('');
+    return;
+  }
+
+  // 通常フィルター
+  if(!APPS.length){
+    el.innerHTML='<p style="color:#9ca3af;text-align:center;padding:24px">申請はありません</p>';
+    return;
+  }
+  var filtered = APPS.slice().reverse().filter(function(a){
+    if(CURRENT_FILTER==='all') return true;
+    if(CURRENT_FILTER==='paid') return isPaid(a);
+    if(CURRENT_FILTER==='unsigned') return a.status!=='paid'&&a.status!=='精算済'&&a.status!=='signed';
+    return true;
+  });
+  if(!filtered.length){
+    el.innerHTML='<p style="color:#9ca3af;text-align:center;padding:24px">該当する申請はありません</p>';
+    return;
+  }
+  el.innerHTML=filtered.map(function(a){
+    var rcptCount = a.receipts ? a.receipts.length : 1;
+    return '<div class="li" onclick="shD(\''+a.id+'\')">'+
+      '<div style="display:flex;justify-content:space-between">'+
+      '<div><div style="font-size:12px;color:#9ca3af">'+fmtDateJP(a.date)+'</div><div style="font-weight:600;margin-top:2px">'+a.person+'　'+rcptCount+'件レシート清算</div></div>'+
+      '<div style="text-align:right"><div style="font-weight:700;color:#dc2626;font-size:16px">¥'+fmt(a.total)+'</div>'+stLabel(a.status)+'</div></div>'+
+      '<div style="font-size:11px;color:#9ca3af;margin-top:6px">'+a.id+'</div></div>';
+  }).join('');
+}
+
+function shD(id){
+  var a=APPS.find(function(x){return x.id===id;});if(!a)return;
+
+  var receiptDetail='';
+  if(a.receipts&&a.receipts.length>0){
+    receiptDetail=a.receipts.map(function(r,ri){
+      var itemRows=(r.items||[]).map(function(it){
+        return '<tr><td>'+it.name+'</td><td>'+(it.account||'—')+'</td><td>'+(it.tax_category||'—')+'</td><td style="text-align:right">¥'+fmt(it.amount)+'</td></tr>';
+      }).join('');
+      return '<div style="margin-bottom:12px">'+
+        '<div class="rbadge">レシート '+(ri+1)+'</div>'+
+        '<div style="font-size:12px;color:#6b7280;margin:4px 0 6px">'+r.store+'　'+r.date+(r.invoice?'　'+r.invoice:'')+'</div>'+
+        '<table class="tbl"><thead><tr><th>商品名</th><th>勘定科目</th><th>税区分</th><th>金額</th></tr></thead><tbody>'+itemRows+'</tbody></table>'+
+        '<div style="text-align:right;font-size:13px;font-weight:700;margin-top:6px;color:#dc2626">小計: ¥'+fmt(r.total)+'</div>'+
+        (r.b64?'<img src="data:'+r.mime+';base64,'+r.b64+'" style="width:100%;border-radius:8px;margin-top:8px"/>':'')+
+        '</div>';
+    }).join('<hr/>');
+  } else {
+    var rows=(a.items||[]).map(function(it){return '<tr><td>'+it.name+'</td><td>'+(it.account||'—')+'</td><td>'+(it.tax_category||'—')+'</td><td style="text-align:right">¥'+fmt(it.amount)+'</td></tr>';}).join('');
+    receiptDetail='<table class="tbl"><thead><tr><th>商品名</th><th>勘定科目</th><th>税区分</th><th>金額</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  }
+
+  var signSection='';
+  if(!isPaid(a)){
+    if(a.client_sign){
+      signSection=
+        '<hr/>'+
+        '<div style="font-size:13px;font-weight:700;margin-bottom:8px">電子サイン（顧問先）</div>'+
+        '<img src="'+a.client_sign+'" style="border:1px solid #e5e7eb;border-radius:8px;width:100%;max-height:100px;object-fit:contain"/>'+
+        '<div style="font-size:11px;color:#9ca3af;margin-top:4px">署名日時：'+(a.client_signed_at||'')+'</div>'+
+        '<hr/>'+
+        '<button class="btn bg" id="paybtn">現金精算を完了する</button>';
+    } else {
+      signSection=
+        '<hr/><div class="sign-box">'+
+        '<div style="font-size:13px;font-weight:700;margin-bottom:8px">電子サイン（顧問先）</div>'+
+        '<p style="font-size:12px;color:#6b7280;margin-bottom:10px">現金精算前に署名してください</p>'+
+        '<canvas id="ccvs" height="120" style="border:2px solid #e5e7eb;border-radius:8px;width:100%;touch-action:none;cursor:crosshair;background:#fff;display:block"></canvas>'+
+        '<div style="display:flex;gap:8px;margin-top:8px;align-items:center">'+
+        '<button id="cclr" style="padding:6px 12px;background:#f3f4f6;border:none;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600">クリア</button>'+
+        '<span id="csl" style="display:none;font-size:12px;color:#16a34a;font-weight:600">✓ 署名済み</span>'+
+        '</div>'+
+        '<button class="btn bg" id="savesignbtn" style="margin-top:12px">署名を保存する</button>'+
+        '</div><hr/>'+
+        '<button class="btn bd" id="paybtn" disabled>現金精算を完了する</button>'+
+        '<p style="font-size:11px;color:#9ca3af;text-align:center;margin-top:6px">※電子サイン完了後に精算できます</p>';
+    }
+  } else {
+    // 精算完了済み → 印刷ボタン
+    signSection =
+      '<hr/>'+
+      '<button class="btn" onclick="clsM();openPrintModal(\''+a.id+'\')" style="background:#1c1917;color:#fff;font-size:14px;font-weight:700;border:none;border-radius:8px;padding:14px;width:100%;cursor:pointer;font-family:inherit;margin-top:4px">🖨 精算書を印刷する</button>';
+  }
+
+  $e('mb').innerHTML=
+    '<div class="banner" style="margin-bottom:16px">'+
+    '<div style="font-size:11px;color:#9ca3af;margin-bottom:2px">合計金額</div>'+
+    '<div style="font-size:24px;font-weight:700">¥'+fmt(a.total)+'</div>'+
+    '<div style="font-size:11px;color:#9ca3af;margin-top:4px">精算日：<b style="color:#fff">'+(a.settlement_date?fmtDateJP(a.settlement_date):'未精算')+'</b></div>'+
+    '</div>'+
+    '<div class="idb"><div style="font-size:11px;color:#9ca3af;margin-bottom:6px">申請ID</div><div style="font-size:18px;font-weight:700;letter-spacing:2px">'+a.id+'</div></div>'+
+    '<div style="margin-bottom:12px;text-align:center">'+stLabel(a.status)+'</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;font-size:13px">'+
+    '<div><span style="color:#9ca3af">申請者</span><br><b>'+a.person+'</b></div>'+
+    '<div><span style="color:#9ca3af">申請日</span><br><b>'+fmtDateJP(a.date)+'</b></div>'+
+    '</div><hr/>'+
+    receiptDetail+
+    (a.sign&&a.sign.startsWith('data:')
+      ?'<hr/><div style="font-size:12px;font-weight:600;color:#6b7280;margin-bottom:8px">電子サイン（申請者）</div><img src="'+a.sign+'" style="border:1px solid #e5e7eb;border-radius:8px;width:100%;max-height:100px;object-fit:contain"/>'
+      :'')+
+    signSection;
+
+  $e('ov').style.display='block';
+
+  var paybtn=$e('paybtn');
+  if(paybtn){
+    paybtn.onclick=function(){
+      if(paybtn.disabled)return;
+      a.status='paid';
+      a.paid_at=new Date().toISOString();
+      sv();
+      updateSheet(a.id, {status:'paid'});
+      clsM();renderAdminList();
+      alert('精算完了しました');
+    };
+  }
+
+  if(!a.client_sign&&!isPaid(a)){
+    var cv=$e('ccvs');
+    if(cv){
+      cv.width=cv.parentElement.offsetWidth-32;
+      var csigned=false,cdr=false;
+      var ctx=cv.getContext('2d');
+      ctx.strokeStyle='#1c1917';ctx.lineWidth=2;ctx.lineCap='round';
+      function cxy(e){var r=cv.getBoundingClientRect(),s=e.touches?e.touches[0]:e;return{x:s.clientX-r.left,y:s.clientY-r.top};}
+      cv.onmousedown=cv.ontouchstart=function(e){e.preventDefault();cdr=true;var p=cxy(e);ctx.beginPath();ctx.moveTo(p.x,p.y);};
+      cv.onmousemove=cv.ontouchmove=function(e){e.preventDefault();if(!cdr)return;var p=cxy(e);ctx.lineTo(p.x,p.y);ctx.stroke();csigned=true;$e('csl').style.display='inline';};
+      cv.onmouseup=cv.ontouchend=function(){cdr=false;};
+      $e('cclr').onclick=function(){ctx.clearRect(0,0,cv.width,cv.height);csigned=false;$e('csl').style.display='none';};
+      $e('savesignbtn').onclick=function(){
+        if(!csigned){alert('署名を記入してください');return;}
+        var now=new Date();
+        a.client_sign=cv.toDataURL();
+        a.client_signed_at=now.toLocaleString('ja-JP');
+        a.settlement_date=now.toISOString().slice(0,10);
+        a.status='signed';
+        sv();
+        updateSheet(a.id, {status:'signed', settlement_date:a.settlement_date, client_sign:a.client_sign, client_signed_at:a.client_signed_at});
+        clsM();shD(id);renderAdminList();
+      };
+    }
+  }
+}
+
+function clsM(){$e('ov').style.display='none';}
+
+function openCloseModal(){
+  var b = calcBalance();
+  $e('cm-carry').textContent = '¥'+fmt(CARRYOVER);
+  $e('cm-dep').textContent = '¥'+fmt(b.depositSum);
+  $e('cm-exp').textContent = '¥'+fmt(b.expenseSum);
+  $e('cm-bal').textContent = '¥'+fmt(b.balance);
+  $e('cm-bal').style.color = b.balance >= 0 ? '#16a34a' : '#dc2626';
+  // 対象月 = 精算日（settlement_date）の最多月
+  var targetMonth = '';
+  if(APPS.length > 0){
+    var monthCount = {};
+    APPS.forEach(function(a){
+      var m = (a.settlement_date || '').slice(0,7);
+      if(m) monthCount[m] = (monthCount[m]||0) + 1;
+    });
+    var maxCount = 0;
+    Object.keys(monthCount).forEach(function(m){
+      if(monthCount[m] > maxCount){ maxCount = monthCount[m]; targetMonth = m; }
+    });
+  }
+  if(!targetMonth){
+    var now = new Date();
+    var y = now.getMonth()===0 ? now.getFullYear()-1 : now.getFullYear();
+    var m = now.getMonth()===0 ? 12 : now.getMonth();
+    targetMonth = y+'-'+('0'+m).slice(-2);
+  }
+  var parts = targetMonth.split('-');
+  $e('close-month-label').textContent = parts[0]+'年'+parseInt(parts[1],10)+'月';
+  $e('close-month-label').setAttribute('data-month', targetMonth);
+  $e('close-step1').style.display='block';
+  $e('close-step2').style.display='none';
+  $e('close-ov').style.display='block';
+}
+
+function closeCloseModal(){
+  $e('close-ov').style.display='none';
+}
+
+function execClose(){
+  var month = $e('close-month-label').getAttribute('data-month');
+  if(!month){alert('対象月が取得できません');return;}
+  var b = calcBalance();
+  var newCarryover = b.balance;
+
+  // GASに締め処理を送信
+  fetch(GAS_URL,{
+    method:'POST',
+    headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify({
+      action:'monthClose',
+      month: month,
+      carryover: CARRYOVER,
+      depositSum: b.depositSum,
+      expenseSum: b.expenseSum,
+      newCarryover: newCarryover,
+      apps: APPS.map(function(a){return {id:a.id,date:a.date,person:a.person,store:a.store,total:a.total,status:a.status,settlement_date:a.settlement_date};}),
+      deposits: DEPOSITS
+    })
+  }).catch(function(){});
+
+  // 繰越額を新残高に更新
+  CARRYOVER = newCarryover;
+  localStorage.setItem('carryover', String(CARRYOVER));
+
+  // 締め処理日時を記録（これ以前のGASデータは再読み込みしない）
+  var closeAt = new Date().toISOString();
+  localStorage.setItem('last_close_at', closeAt);
+
+  // 申請・入金履歴をリセット
+  APPS = [];
+  DEPOSITS = [];
+  sv();
+  localStorage.setItem('deposits','[]');
+
+  // 完了表示
+  $e('close-step1').style.display='none';
+  $e('close-step2').style.display='block';
+  $e('close-done-msg').textContent =
+    month.replace('-','年')+'月 の締めが完了しました。\n次月繰越額：¥'+fmt(newCarryover);
+
+  // UIを更新
+  setTimeout(function(){
+    renderAdminList();
+  }, 300);
+}
+
+function dlCSV(){
+  function esc(v){var s=String(v==null?'':v);return(s.indexOf(',')>=0||s.indexOf('"')>=0||s.indexOf('\n')>=0)?'"'+s.replace(/"/g,'""')+'"':s;}
+  function stJa(s){
+    if(s==='paid'||s==='精算済') return '精算完了';
+    if(s==='signed') return 'サイン済（未精算）';
+    return '未精算';
+  }
+  function fmtDate(dateStr){
+    if(!dateStr) return '';
+    try{var d=new Date(dateStr);if(isNaN(d.getTime()))return dateStr;return(d.getMonth()+1)+'/'+(d.getDate());}catch(e){return dateStr;}
+  }
+
+  var rows = [['日付','申請者','内容','金額','精算ステータス']];
+
+  // 前月繰越
+  rows.push(['－','－','【前月繰越】', CARRYOVER, '－']);
+
+  // 申請データ（申請単位・総額）
+  APPS.forEach(function(a){
+    var csvDate = fmtDate(a.settlement_date || a.date);
+    var rcptCount = a.receipts ? a.receipts.length : 1;
+    rows.push([csvDate, a.person, rcptCount+'件レシート精算', -a.total, stJa(a.status)]);
+  });
+
+  // 入金データ
+  DEPOSITS.forEach(function(d){
+    rows.push([fmtDate(d.date), '－', '入金'+(d.memo?'（'+d.memo+'）':''), d.amount, '－']);
+  });
+
+  // 日付昇順ソート（ヘッダーと前月繰越除く）
+  var header = rows.shift();
+  var carryRow = rows.shift();
+  rows.sort(function(a,b){return String(a[0]).localeCompare(String(b[0]));});
+
+  // 残高計算
+  var b = calcBalance();
+  rows.push(['－','－','【残高】', b.balance, '－']);
+
+  rows.unshift(carryRow);
+  rows.unshift(header);
+
+  if(rows.length <= 2){alert('出力するデータがありません');return;}
+  var csv = '\uFEFF' + rows.map(function(r){return r.map(esc).join(',');}).join('\n');
+  var link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  link.download = '入出金明細_'+today()+'.csv';
+  link.click();
+}
+
+function openReceiptTray(){
+  var paid = APPS.filter(function(a){ return isPaid(a); });
+  if(!paid.length){ alert('精算完了の申請がありません'); return; }
+
+  // A4縦 2列×3行、各枠をA6相当に
+  var cols = 2, rows = 3, perPage = cols * rows;
+  var pages = [];
+  for(var i=0; i<paid.length; i+=perPage){
+    pages.push(paid.slice(i, i+perPage));
+  }
+
+  var pageHTML = pages.map(function(pageApps){
+    var cells = '';
+    for(var ci=0; ci<perPage; ci++){
+      var a = pageApps[ci];
+      if(a){
+        var rcptCount = a.receipts ? a.receipts.length : 1;
+        var stores = a.receipts ? a.receipts.map(function(r){return r.store||'';}).filter(Boolean).join('・') : (a.store||'');
+        cells +=
+          '<div class="tray-cell">'+
+          '<div class="tray-header">'+
+            '<div class="tray-id">'+a.id+'</div>'+
+            '<div class="tray-meta">'+
+              '<span class="tray-person">'+a.person+'</span>'+
+              '<span class="tray-date">'+(a.settlement_date||a.date||'')+'</span>'+
+            '</div>'+
+            '<div class="tray-store">'+stores+'</div>'+
+            '<div class="tray-amount">¥'+fmt(a.total)+'　<span class="tray-count">'+rcptCount+'枚</span></div>'+
+          '</div>'+
+          '<div class="tray-space"><span class="tray-hint">← レシートをここに貼付 →</span></div>'+
+          '</div>';
+      } else {
+        cells += '<div class="tray-cell tray-empty"></div>';
+      }
+    }
+    return '<div class="tray-page">'+cells+'</div>';
+  }).join('');
+
+  var html = '<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"/>'+
+    '<title>レシート貼付台紙</title>'+
+    '<style>'+
+    '@import url(\'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&display=swap\');'+
+    '*{box-sizing:border-box;margin:0;padding:0}'+
+    'body{font-family:\'Noto Sans JP\',sans-serif;background:#fff;color:#000}'+
+    '.no-print{text-align:center;padding:16px;background:#f3f4f6}'+
+    '.no-print button{padding:10px 28px;background:#1c1917;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin:0 6px}'+
+    '.no-print .sub{font-size:12px;color:#6b7280;margin-top:8px}'+
+    '.tray-page{display:grid;grid-template-columns:1fr 1fr;gap:0;width:210mm;min-height:297mm;padding:8mm;page-break-after:always;border-bottom:1px dashed #ccc}'+
+    '.tray-cell{border:2px dashed #374151;border-radius:4px;margin:4mm;display:flex;flex-direction:column;min-height:128mm;overflow:hidden}'+
+    '.tray-cell.tray-empty{border-color:#e5e7eb}'+
+    '.tray-header{background:#1c1917;color:#fff;padding:6px 10px}'+
+    '.tray-id{font-size:11px;font-weight:700;letter-spacing:1px;color:#86efac;margin-bottom:3px}'+
+    '.tray-meta{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}'+
+    '.tray-person{font-size:14px;font-weight:700}'+
+    '.tray-date{font-size:10px;color:#9ca3af}'+
+    '.tray-store{font-size:10px;color:#d1d5db;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'+
+    '.tray-amount{font-size:16px;font-weight:700;color:#fde68a}'+
+    '.tray-count{font-size:10px;color:#9ca3af;font-weight:400}'+
+    '.tray-space{flex:1;display:flex;align-items:center;justify-content:center;background:#fafafa}'+
+    '.tray-hint{font-size:10px;color:#d1d5db;letter-spacing:1px}'+
+    '@media print{'+
+    '.no-print{display:none!important}'+
+    '.tray-page{page-break-after:always;border:none}'+
+    'body{-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+    '}'+
+    '</style></head><body>'+
+    '<div class="no-print">'+
+      '<button onclick="window.print()">🖨 印刷する</button>'+
+      '<button onclick="window.close()">✕ 閉じる</button>'+
+      '<div class="sub">精算完了 '+paid.length+'件 ／ '+pages.length+'ページ</div>'+
+    '</div>'+
+    pageHTML+
+    '</body></html>';
+
+  var win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+}
+// 起動時にGASからlast_seqを同期してからアプリ開始
+(function initSeqSync(){
+  fetch(GAS_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify({action:'load'})
+  })
+  .then(function(r){return r.json();})
+  .then(function(res){
+    if(res && res.last_seq !== undefined){
+      var localSeq = Number(localStorage.getItem('last_seq')||0);
+      var gasSeq   = Number(res.last_seq);
+      var maxSeq   = Math.max(localSeq, gasSeq);
+      localStorage.setItem('last_seq', String(maxSeq));
+    }
+  })
+  .catch(function(){})
+  .finally(function(){
+    showUpload();
+  });
+})();
+</script>
+</body>
+</html>
